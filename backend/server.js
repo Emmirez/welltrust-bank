@@ -26,16 +26,30 @@ connectDB();
 const app = express();
 const httpServer = http.createServer(app);
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "https://welltrustapp.com",
+  "https://www.welltrustapp.com",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.get("/api/health", (req, res) => res.json({ status: "ok", bank: "Well Trust Bank API" }));
+app.get("/api/health", (req, res) =>
+  res.json({ status: "ok", bank: "Well Trust Bank API" }),
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
