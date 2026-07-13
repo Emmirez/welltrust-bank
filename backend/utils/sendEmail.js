@@ -2,17 +2,8 @@
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
 export const sendEmail = async ({ to, toName, subject, html }) => {
-  // if (!process.env.BREVO_API_KEY) {
-  //   console.warn("BREVO_API_KEY not set — skipping email send. Would have sent:", subject, "to", to);
-  //   return { skipped: true };
-  // }
-
   if (!process.env.BREVO_API_KEY) {
-    console.warn("BREVO_API_KEY not set — skipping email send.");
-    console.warn(`   To: ${to}`);
-    console.warn(`   Subject: ${subject}`);
-    console.warn(`   Content: ${html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}`);
-    return { skipped: true };
+    throw new Error("BREVO_API_KEY is not configured — cannot send email.");
   }
 
   try {
@@ -61,7 +52,15 @@ export const otpEmailTemplate = (name, otp) => `
   </div>
 `;
 
-export const transactionEmailTemplate = ({ name, action, amount, currency, balance, reference, date }) => `
+export const transactionEmailTemplate = ({
+  name,
+  action,
+  amount,
+  currency,
+  balance,
+  reference,
+  date,
+}) => `
   <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
     <h2 style="color:#0B2545;">Well Trust Bank</h2>
     <p>Hi ${name},</p>
