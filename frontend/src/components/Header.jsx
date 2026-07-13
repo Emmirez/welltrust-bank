@@ -59,14 +59,14 @@ const Header = ({ showBackHome = false }) => {
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-20">
-        <a href="/" className="flex items-center gap-2.5">
+        <a href="/" className="flex items-center gap-2.5 shrink-0">
           <img
             src="/logo.png"
             alt="Well Trust Bank"
-            className="h-10 w-auto"
+            className="h-10 w-auto shrink-0"
             onError={(e) => (e.target.style.display = "none")}
           />
-          <span className="font-display font-bold text-lg tracking-tight leading-none">
+          <span className="font-display font-bold text-lg tracking-tight leading-none whitespace-nowrap">
             <span className="text-navy-900">Well</span>{" "}
             <span className="text-gold-600">Trust Bank</span>
           </span>
@@ -93,7 +93,7 @@ const Header = ({ showBackHome = false }) => {
           </div>
         ) : (
           <>
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-6">
               <a
                 href={navLinks[0].to}
                 className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-navy transition"
@@ -153,10 +153,16 @@ const Header = ({ showBackHome = false }) => {
               ))}
             </nav>
 
-            <div className="hidden md:flex items-center gap-3">
-              <a href="/login" className="btn-secondary !py-2.5 whitespace-nowrap">Log In</a>
-              
-            <a    href="/register"
+            <div className="hidden lg:flex items-center gap-3">
+              <a
+                href="/login"
+                className="btn-secondary !py-2.5 whitespace-nowrap"
+              >
+                Log In
+              </a>
+
+              <a
+                href="/register"
                 className="btn-primary !py-2.5 flex items-center gap-1.5 whitespace-nowrap"
               >
                 Open an Account <ArrowRight size={16} />
@@ -164,7 +170,7 @@ const Header = ({ showBackHome = false }) => {
             </div>
 
             <button
-              className="md:hidden text-navy"
+              className="lg:hidden text-navy shrink-0"
               onClick={() => setMenuOpen((o) => !o)}
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -174,7 +180,7 @@ const Header = ({ showBackHome = false }) => {
       </div>
 
       {!showBackHome && menuOpen && (
-        <div className="md:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-1">
+        <div className="lg:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-1">
           <a
             href="/"
             className="flex items-center gap-2 text-sm font-medium text-slate-600 py-2"
