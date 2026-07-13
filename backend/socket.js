@@ -4,9 +4,21 @@ import jwt from "jsonwebtoken";
 let io = null;
 
 export const initSocket = (httpServer) => {
+  const allowedOrigins = [
+    process.env.CLIENT_URL,
+    "https://welltrustapp.com",
+    "https://www.welltrustapp.com",
+  ].filter(Boolean);
+
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || "*",
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
       credentials: true,
     },
   });
