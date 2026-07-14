@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
+  Eye,
 } from "lucide-react";
 import api from "../api/axios";
 import Header from "../components/Header";
@@ -179,7 +180,7 @@ const Register = () => {
               onError={(e) => (e.target.style.display = "none")}
             />
             <h1 className="text-2xl font-bold text-navy-900">
-               Start banking with us today
+              Start banking with us today
             </h1>
             <p className="text-slate-600 text-sm mt-1">
               Get started in minutes. Most applications are approved within 1-2
@@ -254,10 +255,18 @@ const Register = () => {
                   value={form.phone}
                   onChange={(v) => update("phone", v)}
                 />
-               <div>
-                  <label className="text-xs text-slate-500 mb-1.5 block">Date of birth</label>
-                  <div className="relative w-full overflow-hidden" style={{ boxSizing: "border-box" }}>
-                    <Calendar size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
+                <div>
+                  <label className="text-xs text-slate-500 mb-1.5 block">
+                    Date of birth
+                  </label>
+                  <div
+                    className="relative w-full overflow-hidden"
+                    style={{ boxSizing: "border-box" }}
+                  >
+                    <Calendar
+                      size={17}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
+                    />
                     {!form.dateOfBirth && (
                       <span className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
                         Select date
@@ -378,32 +387,28 @@ const Register = () => {
 
             {step === 3 && (
               <div className="space-y-4">
-                <Field
+                <PasswordField
                   icon={Lock}
-                  type="password"
                   placeholder="Create password (min. 8 characters)"
                   value={form.password}
                   onChange={(v) => update("password", v)}
                 />
-                <Field
+                <PasswordField
                   icon={Lock}
-                  type="password"
                   placeholder="Confirm password"
                   value={form.confirmPassword}
                   onChange={(v) => update("confirmPassword", v)}
                 />
-                <Field
+                <PasswordField
                   icon={KeyRound}
-                  type="password"
                   placeholder="Create 4-digit transaction PIN"
                   value={form.transactionPin}
                   onChange={(v) =>
                     update("transactionPin", v.replace(/\D/g, "").slice(0, 4))
                   }
                 />
-                <Field
+                <PasswordField
                   icon={KeyRound}
-                  type="password"
                   placeholder="Confirm transaction PIN"
                   value={form.confirmPin}
                   onChange={(v) =>
@@ -477,5 +482,33 @@ const Field = ({ icon: Icon, ...props }) => (
     />
   </div>
 );
+
+const PasswordField = ({ icon: Icon, value, onChange, ...props }) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      {Icon && (
+        <Icon
+          size={17}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+        />
+      )}
+      <input
+        {...props}
+        type={visible ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="input-field !pl-10 !pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-navy transition"
+      >
+        {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+      </button>
+    </div>
+  );
+};
 
 export default Register;
