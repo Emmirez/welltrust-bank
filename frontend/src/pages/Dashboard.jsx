@@ -169,6 +169,8 @@ const Dashboard = () => {
           ))}
         </div>
 
+         <AccountLimitsCard currency={currency} />
+
           {/* Virtual card */}
           <div className="md:col-span-2 rounded-xl3 bg-gradient-to-br from-navy-600 to-navy-800 p-6 text-white shadow-card relative overflow-hidden flex flex-col justify-between min-h-[220px]">
             {/* Card brand badge */}
@@ -220,7 +222,7 @@ const Dashboard = () => {
         </div>
 
         
-        <AccountLimitsCard currency={currency} />
+       
 
         <SendMoney />
         <KycReminderBanner />
