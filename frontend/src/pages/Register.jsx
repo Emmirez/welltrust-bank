@@ -254,14 +254,23 @@ const Register = () => {
                   value={form.phone}
                   onChange={(v) => update("phone", v)}
                 />
-                <div>
+               <div>
                   <label className="text-xs text-slate-500 mb-1.5 block">Date of birth</label>
-                  <Field
-                    icon={Calendar}
-                    type="date"
-                    value={form.dateOfBirth}
-                    onChange={(v) => update("dateOfBirth", v)}
-                  />
+                  <div className="relative w-full" style={{ boxSizing: "border-box" }}>
+                    <Calendar size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
+                    {!form.dateOfBirth && (
+                      <span className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                        Select date
+                      </span>
+                    )}
+                    <input
+                      type="date"
+                      value={form.dateOfBirth}
+                      onChange={(e) => update("dateOfBirth", e.target.value)}
+                      className="input-field !pl-10"
+                      style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", display: "block" }}
+                    />
+                  </div>
                 </div>
               </div>
             )}
