@@ -24,6 +24,12 @@ import taxRefundRoutes from "./routes/taxRefundRoutes.js";
 connectDB();
 
 const app = express();
+
+// Render (and most hosting platforms) sit behind a reverse proxy, so
+// Express needs to trust the X-Forwarded-For header to correctly identify
+// the real client IP — otherwise express-rate-limit can't work properly.
+app.set("trust proxy", 1);
+
 const httpServer = http.createServer(app);
 
 const allowedOrigins = [
