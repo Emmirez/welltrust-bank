@@ -58,6 +58,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DepositDisclosures from "./pages/DepositDisclosures";
 import Careers from "./pages/Careers";
 import ScrollToTop from "./components/ScrollToTop";
+import InstallPrompt from "./components/InstallPrompt";
 import Help from "./pages/Help";
 import MoneyRequests from "./pages/MoneyRequests";
 import Loans from "./pages/Loans";
@@ -70,6 +71,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+       <InstallPrompt />
       <AuthProvider>
         <SocketProvider>
           <Routes>
