@@ -10,7 +10,7 @@ const RegistrationSuccess = () => {
         </div>
         <h1 className="text-xl font-bold text-navy-900">Your application is under review</h1>
         <p className="text-slate-500 text-sm mt-3 leading-relaxed">
-          Thanks for verifying your email and phone number. Our team reviews every new
+          Thanks for verifying your email. Our team reviews every new
           account application before it goes live — you'll get an email and in-app
           notification the moment your account is approved.
         </p>

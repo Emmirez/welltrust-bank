@@ -254,13 +254,15 @@ const Register = () => {
                   value={form.phone}
                   onChange={(v) => update("phone", v)}
                 />
-                <Field
-                  icon={Calendar}
-                  type="date"
-                  placeholder="Date of birth"
-                  value={form.dateOfBirth}
-                  onChange={(v) => update("dateOfBirth", v)}
-                />
+                <div>
+                  <label className="text-xs text-slate-500 mb-1.5 block">Date of birth</label>
+                  <Field
+                    icon={Calendar}
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={(v) => update("dateOfBirth", v)}
+                  />
+                </div>
               </div>
             )}
 
