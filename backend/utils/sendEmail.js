@@ -52,27 +52,22 @@ export const otpEmailTemplate = (name, otp) => `
   </div>
 `;
 
-export const transactionEmailTemplate = ({
-  name,
-  action,
-  amount,
-  currency,
-  balance,
-  reference,
-  date,
-}) => `
-  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
-    <h2 style="color:#0B2545;">Well Trust Bank</h2>
-    <p>Hi ${name},</p>
-    <p>Your account was just <strong>${action}</strong> <strong>${currency} ${amount}</strong>.</p>
-    <table style="width:100%; margin-top:16px; font-size: 14px; color:#374151;">
-      <tr><td style="padding:4px 0;">Reference</td><td style="text-align:right;">${reference}</td></tr>
-      <tr><td style="padding:4px 0;">Date</td><td style="text-align:right;">${date}</td></tr>
-      <tr><td style="padding:4px 0;">New Balance</td><td style="text-align:right; font-weight:bold;">${currency} ${balance}</td></tr>
-    </table>
-    <p style="margin-top:16px; color:#6b7280; font-size: 12px;">If you don't recognize this activity, contact support immediately.</p>
-  </div>
-`;
+const formatMoney = (amount, currency) => {
+  const num = Number(amount) || 0;
+  return `${currency} ${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+export const transactionEmailTemplate = ({ name, action, amount, currency, balance, reference, date }) => emailShell(`
+  <p style="margin:0 0 12px 0; color:#111827;">Dear ${name},</p>
+  <p style="margin:0 0 16px 0; color:#111827;">Your Well Trust Bank account has been <strong>${action}</strong> in the amount of <strong>${formatMoney(amount, currency)}</strong>.</p>
+  <table style="width:100%; font-size: 14px; color:#374151; border-collapse:collapse;">
+    <tr><td style="padding:8px 0; border-bottom:1px solid #f1f5f9;">Transaction Reference</td><td style="padding:8px 0; border-bottom:1px solid #f1f5f9; text-align:right;">${reference}</td></tr>
+    <tr><td style="padding:8px 0; border-bottom:1px solid #f1f5f9;">Date &amp; Time</td><td style="padding:8px 0; border-bottom:1px solid #f1f5f9; text-align:right;">${date}</td></tr>
+    <tr><td style="padding:8px 0;">Current Balance</td><td style="padding:8px 0; text-align:right; font-weight:bold; color:${NAVY};">${formatMoney(balance, currency)}</td></tr>
+  </table>
+  <p style="margin:16px 0 0 0; color:${SLATE}; font-size: 12px;">If you did not authorize this transaction, please contact support immediately.</p>
+  <p style="margin:8px 0 0 0; color:${SLATE}; font-size: 11px;">Well Trust Bank, Member FDIC. Deposits insured up to $250,000.</p>
+`);
 
 export const approvalEmailTemplate = (name, status) => `
   <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
