@@ -38,7 +38,14 @@ h1, h2, h3, h4 {
 }
 
 .input-field {
-  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-navy-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy-300 focus:border-navy-300 transition;
+  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-navy-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy-300 focus:border-navy-300 transition;
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  .input-field {
+    font-size: 0.875rem; /* restore text-sm (14px) on tablet/desktop, where iOS auto-zoom doesn't apply */
+  }
 }
 
 .card {
