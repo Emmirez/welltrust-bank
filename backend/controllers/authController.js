@@ -66,7 +66,6 @@ export const register = async (req, res) => {
     }
 
     const emailOtp = generateOtp();
-    const phoneOtp = generateOtp();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const user = await User.create({
@@ -86,8 +85,6 @@ export const register = async (req, res) => {
       status: "pending",
       emailOtp,
       emailOtpExpires: otpExpires,
-      phoneOtp,
-      phoneOtpExpires: otpExpires,
     });
 
     await sendEmail({
@@ -97,14 +94,8 @@ export const register = async (req, res) => {
       html: otpEmailTemplate(user.firstName, emailOtp),
     });
 
-    await sendSms({
-      to: user.phone,
-      body: `Well Trust Bank: your verification code is ${phoneOtp}. It expires in 10 minutes.`,
-    });
-
     return res.status(201).json({
-      message:
-        "Registration successful. Please verify your email and phone number.",
+      message: "Registration successful. Please verify your email.",
       userId: user._id,
       email: user.email,
     });
@@ -231,15 +222,16 @@ export const login = async (req, res) => {
         .json({ message: "Your account is pending admin approval" });
     }
     if (user.status === "rejected") {
+      return res.status(403).json({
+        message: "Your account application was not approved. Contact support.",
+      });
+    }
+    if (user.status === "suspended") {
       return res
         .status(403)
         .json({
-          message:
-            "Your account application was not approved. Contact support.",
+          message: "Your account is currently suspended. Contact support.",
         });
-    }
-   if (user.status === "suspended") {
-      return res.status(403).json({ message: "Your account is currently suspended. Contact support." });
     }
 
     if (user.twoFactorEnabled) {
@@ -283,11 +275,9 @@ export const verifyTwoFactorLogin = async (req, res) => {
     const { userId, token } = req.body;
     const user = await User.findById(userId).select("+twoFactorSecret");
     if (!user || !user.twoFactorEnabled) {
-      return res
-        .status(400)
-        .json({
-          message: "Two-factor authentication is not enabled for this account",
-        });
+      return res.status(400).json({
+        message: "Two-factor authentication is not enabled for this account",
+      });
     }
 
     const isValid = verifyTwoFactorToken(token, user.twoFactorSecret);
@@ -326,7 +316,6 @@ export const getMe = async (req, res) => {
   return res.json({ user: req.user });
 };
 
-
 // @route POST /api/auth/forgot-password
 export const forgotPassword = async (req, res) => {
   try {
@@ -336,7 +325,10 @@ export const forgotPassword = async (req, res) => {
     // Always return the same response whether or not the email exists,
     // so this endpoint can't be used to check which emails are registered.
     if (!user) {
-      return res.json({ message: "If an account exists with that email, a reset code has been sent." });
+      return res.json({
+        message:
+          "If an account exists with that email, a reset code has been sent.",
+      });
     }
 
     const otp = generateOtp();
@@ -351,7 +343,11 @@ export const forgotPassword = async (req, res) => {
       html: otpEmailTemplate(user.firstName, otp),
     });
 
-    return res.json({ message: "If an account exists with that email, a reset code has been sent.", userId: user._id });
+    return res.json({
+      message:
+        "If an account exists with that email, a reset code has been sent.",
+      userId: user._id,
+    });
   } catch (error) {
     console.error("Forgot password error:", error);
     return res.status(500).json({ message: "Could not process request" });
@@ -366,10 +362,14 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
     if (newPassword.length < 8) {
-      return res.status(400).json({ message: "New password must be at least 8 characters" });
+      return res
+        .status(400)
+        .json({ message: "New password must be at least 8 characters" });
     }
 
-    const user = await User.findById(userId).select("+emailOtp +emailOtpExpires");
+    const user = await User.findById(userId).select(
+      "+emailOtp +emailOtpExpires",
+    );
     if (!user) return res.status(404).json({ message: "Invalid request" });
 
     if (user.emailOtp !== otp || user.emailOtpExpires < new Date()) {
@@ -383,7 +383,8 @@ export const resetPassword = async (req, res) => {
 
     await notifyGeneral(user, {
       title: "Password reset",
-      message: "Your account password was just reset. If this wasn't you, contact support immediately.",
+      message:
+        "Your account password was just reset. If this wasn't you, contact support immediately.",
       type: "security",
       email: true,
     });
