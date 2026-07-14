@@ -58,8 +58,8 @@ const InstallPrompt = () => {
             <p className="font-semibold text-navy-900 text-sm">Install Well Trust Bank</p>
             <p className="text-xs text-slate-400 mt-0.5">
               {showIosInstructions
-                ? "Get quick access from your home screen — works like a real app"
-                : "Get quick access from your home screen — works like a real app"}
+                ? "Add to your home screen for quick, one-tap access anytime"
+                : "Install for faster access, offline support, and a full-screen experience"}
             </p>
           </div>
           <button onClick={dismiss} className="text-slate-400 hover:text-navy transition shrink-0">
