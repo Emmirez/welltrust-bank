@@ -39,18 +39,58 @@ export const sendEmail = async ({ to, toName, subject, html }) => {
   }
 };
 
-// --- Email templates ---
+// --- Shared branded email shell ---
 
-export const otpEmailTemplate = (name, otp) => `
-  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
-    <h2 style="color:#0B2545;">Well Trust Bank</h2>
-    <p>Hi ${name},</p>
-    <p>Your verification code is:</p>
-    <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color:#0B2545;">${otp}</p>
-    <p>This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
-    <p style="color:#6b7280; font-size: 12px;">Well Trust Bank never asks for your password or PIN by email.</p>
+const NAVY = "#0B2545";
+const GOLD = "#C9A227";
+const SLATE = "#64748B";
+const LOGO_URL = "https://welltrustapp.com/logo.png";
+
+const emailShell = (bodyHtml) => `
+  <div style="font-family: Arial, Helvetica, sans-serif; max-width: 480px; margin: 0 auto; background:#ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden;">
+
+    <!-- Header -->
+    <div style="background:${NAVY}; padding: 24px 28px;">
+      <table style="width:100%; border-collapse: collapse;">
+        <tr>
+          <td style="vertical-align:middle;">
+            <img src="${LOGO_URL}" alt="Well Trust Bank" width="36" height="36" style="display:block; border-radius:8px;" />
+          </td>
+          <td style="vertical-align:middle; padding-left:10px;">
+            <span style="font-size:18px; font-weight:bold; color:#ffffff;">Well Trust</span>
+            <span style="font-size:18px; font-weight:bold; color:${GOLD};"> Bank</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div style="height:4px; background:${GOLD};"></div>
+
+    <!-- Body -->
+    <div style="padding: 28px;">
+      ${bodyHtml}
+    </div>
+
+    <!-- Footer -->
+    <div style="border-top:1px solid #e5e7eb; padding: 20px 28px; background:#f8fafc;">
+      <p style="margin:0 0 4px 0; font-size:12px; font-weight:bold; color:${NAVY};">Well Trust Bank</p>
+      <p style="margin:0 0 4px 0; font-size:11px; color:${SLATE};">387 Greenwich Street, New York, NY 10013</p>
+      <p style="margin:0 0 12px 0; font-size:11px; color:${SLATE};">support@welltrustbank.com &nbsp;·&nbsp; +1 (863) 333-9415</p>
+      <p style="margin:0; font-size:10px; color:${SLATE}; line-height:1.5;">
+        This email is provided for informational purposes and is not a solicitation. Well Trust Bank is a design &amp; engineering portfolio project — balances shown are simulated and are not FDIC insured or backed by any government agency.
+      </p>
+    </div>
   </div>
 `;
+
+// --- Email templates ---
+
+export const otpEmailTemplate = (name, otp) => emailShell(`
+  <p style="margin:0 0 12px 0; color:#111827;">Hi ${name},</p>
+  <p style="margin:0 0 16px 0; color:#111827;">Your verification code is:</p>
+  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color:${NAVY}; margin: 0 0 16px 0;">${otp}</p>
+  <p style="margin:0 0 16px 0; color:#374151; font-size:14px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
+  <p style="color:${SLATE}; font-size: 12px; margin:0;">Well Trust Bank never asks for your password or PIN by email.</p>
+`);
 
 const formatMoney = (amount, currency) => {
   const num = Number(amount) || 0;
@@ -59,7 +99,7 @@ const formatMoney = (amount, currency) => {
 
 export const transactionEmailTemplate = ({ name, action, amount, currency, balance, reference, date }) => {
   const isCredit = action === "credited";
-  const historyUrl = "https://welltrustbank.com/dashboard/transactions";
+  const historyUrl = "https://welltrustapp.com/dashboard/transactions";
 
   return emailShell(`
     <p style="margin:0 0 16px 0; color:#111827;">Dear ${name},</p>
@@ -91,7 +131,7 @@ export const transactionEmailTemplate = ({ name, action, amount, currency, balan
       </tr>
     </table>
 
-    <p style="margin:20px 0 0 0; color:${SLATE}; font-size: 12px;">If you did not authorize this transaction, please contact us immediately at 1-800-555-0199.</p>
+    <p style="margin:20px 0 0 0; color:${SLATE}; font-size: 12px;">If you did not authorize this transaction, please contact support immediately.</p>
     <p style="margin:8px 0 0 0; color:${SLATE}; font-size: 11px;">Well Trust Bank, Member FDIC. Deposits insured up to $250,000 per depositor, per ownership category.</p>
     <p style="margin:4px 0 0 0; color:${SLATE}; font-size: 11px;">This is an automated notification. Please do not reply to this email.</p>
   `);
