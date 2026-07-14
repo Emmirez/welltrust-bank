@@ -2,7 +2,7 @@ import { Landmark, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 const WELL_TRUST_SWIFT = "WTBKUS33";
-const WELL_TRUST_ADDRESS = "387 Greenwich Street, New York, NY 10013, United States";
+const WELL_TRUST_ADDRESS = "Rue des Alpes 14, 1201 Geneva, Switzerland";
 
 const Row = ({ label, value, copyable }) => {
   const [copied, setCopied] = useState(false);

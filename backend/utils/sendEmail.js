@@ -73,10 +73,12 @@ const emailShell = (bodyHtml) => `
     <!-- Footer -->
     <div style="border-top:1px solid #e5e7eb; padding: 20px 28px; background:#f8fafc;">
       <p style="margin:0 0 4px 0; font-size:12px; font-weight:bold; color:${NAVY};">Well Trust Bank</p>
-      <p style="margin:0 0 4px 0; font-size:11px; color:${SLATE};">387 Greenwich Street, New York, NY 10013</p>
+      <p style="margin:0 0 4px 0; font-size:11px; color:${SLATE};">Rue des Alpes 141201 Geneva Switzerland</p>
       <p style="margin:0 0 12px 0; font-size:11px; color:${SLATE};">support@welltrustbank.com &nbsp;·&nbsp; +1 (863) 333-9415</p>
       <p style="margin:0; font-size:10px; color:${SLATE}; line-height:1.5;">
-        This email is provided for informational purposes and is not a solicitation. Well Trust Bank is a design &amp; engineering portfolio project — balances shown are simulated and are not FDIC insured or backed by any government agency.
+        <p style="margin:16px 0 0 0; color:${SLATE}; font-size: 11px;">
+      This email is provided for informational purposes only. Well Trust Bank, Member FDIC. Deposits insured up to $250,000 per depositor, per ownership category.
+      </p>
       </p>
     </div>
   </div>
@@ -84,11 +86,17 @@ const emailShell = (bodyHtml) => `
 
 // --- Email templates ---
 
-export const otpEmailTemplate = (name, otp) => emailShell(`
-  <p style="margin:0 0 12px 0; color:#111827;">Hi ${name},</p>
-  <p style="margin:0 0 16px 0; color:#111827;">Your verification code is:</p>
-  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color:${NAVY}; margin: 0 0 16px 0;">${otp}</p>
+export const otpEmailTemplate = (name, otp) =>
+  emailShell(`
+  <p style="margin:0 0 16px 0; color:#111827;">Hi ${name},</p>
+
+  <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:20px; margin-bottom:16px; text-align:center;">
+    <p style="margin:0 0 8px 0; font-weight:bold; color:#2563eb; font-size:14px;">Your Verification Code</p>
+    <p style="margin:0; font-size: 34px; font-weight: bold; letter-spacing: 8px; color:${NAVY};">${otp}</p>
+  </div>
+
   <p style="margin:0 0 16px 0; color:#374151; font-size:14px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
+
   <p style="color:${SLATE}; font-size: 12px; margin:0;">Well Trust Bank never asks for your password or PIN by email.</p>
 `);
 
@@ -97,7 +105,15 @@ const formatMoney = (amount, currency) => {
   return `${currency} ${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-export const transactionEmailTemplate = ({ name, action, amount, currency, balance, reference, date }) => {
+export const transactionEmailTemplate = ({
+  name,
+  action,
+  amount,
+  currency,
+  balance,
+  reference,
+  date,
+}) => {
   const isCredit = action === "credited";
   const historyUrl = "https://welltrustapp.com/dashboard/transactions";
 

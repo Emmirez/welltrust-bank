@@ -18,7 +18,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Headquarters",
-    detail: "387 Greenwich Street, New York, NY 10013",
+    detail: "Rue des Alpes 14, 1201 Geneva, Switzerland",
   },
   {
     icon: Clock,
