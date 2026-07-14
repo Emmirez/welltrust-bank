@@ -256,7 +256,7 @@ const Register = () => {
                 />
                <div>
                   <label className="text-xs text-slate-500 mb-1.5 block">Date of birth</label>
-                  <div className="relative w-full" style={{ boxSizing: "border-box" }}>
+                  <div className="relative w-full overflow-hidden" style={{ boxSizing: "border-box" }}>
                     <Calendar size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                     {!form.dateOfBirth && (
                       <span className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
@@ -268,7 +268,15 @@ const Register = () => {
                       value={form.dateOfBirth}
                       onChange={(e) => update("dateOfBirth", e.target.value)}
                       className="input-field !pl-10"
-                      style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", display: "block" }}
+                      style={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
+                        boxSizing: "border-box",
+                        display: "block",
+                        WebkitAppearance: "none",
+                        appearance: "none",
+                      }}
                     />
                   </div>
                 </div>
