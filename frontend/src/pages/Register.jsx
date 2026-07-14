@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Check,
   Eye,
+  EyeOff,
 } from "lucide-react";
 import api from "../api/axios";
 import Header from "../components/Header";
