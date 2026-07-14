@@ -141,6 +141,34 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Quick actions */}
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+          {[
+            { icon: Send, label: "Send", to: "/dashboard/transfer" },
+            {
+              icon: HandCoins,
+              label: "Request",
+              to: "/dashboard/requests",
+            },
+            { icon: FileText, label: "Bill Pay", to: "/dashboard/bills" },
+            { icon: Receipt, label: "History", to: "/dashboard/transactions" },
+            { icon: ScanLine, label: "Cards", to: "/dashboard/cards" },
+          ].map(({ icon: Icon, label, to }) => (
+            <Link
+              key={label}
+              to={to}
+              className="card p-4 flex flex-col items-center gap-2 hover:-translate-y-0.5 hover:shadow-card transition-all"
+            >
+              <div className="h-10 w-10 rounded-xl bg-navy-50 text-navy flex items-center justify-center">
+                <Icon size={18} />
+              </div>
+              <span className="text-xs font-medium text-slate-500">
+                {label}
+              </span>
+            </Link>
+          ))}
+        </div>
+
           {/* Virtual card */}
           <div className="md:col-span-2 rounded-xl3 bg-gradient-to-br from-navy-600 to-navy-800 p-6 text-white shadow-card relative overflow-hidden flex flex-col justify-between min-h-[220px]">
             {/* Card brand badge */}
@@ -191,33 +219,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {[
-            { icon: Send, label: "Send", to: "/dashboard/transfer" },
-            {
-              icon: HandCoins,
-              label: "Request",
-              to: "/dashboard/requests",
-            },
-            { icon: FileText, label: "Bill Pay", to: "/dashboard/bills" },
-            { icon: Receipt, label: "History", to: "/dashboard/transactions" },
-            { icon: ScanLine, label: "Cards", to: "/dashboard/cards" },
-          ].map(({ icon: Icon, label, to }) => (
-            <Link
-              key={label}
-              to={to}
-              className="card p-4 flex flex-col items-center gap-2 hover:-translate-y-0.5 hover:shadow-card transition-all"
-            >
-              <div className="h-10 w-10 rounded-xl bg-navy-50 text-navy flex items-center justify-center">
-                <Icon size={18} />
-              </div>
-              <span className="text-xs font-medium text-slate-500">
-                {label}
-              </span>
-            </Link>
-          ))}
-        </div>
+        
         <AccountLimitsCard currency={currency} />
 
         <SendMoney />
