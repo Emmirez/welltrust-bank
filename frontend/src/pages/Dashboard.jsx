@@ -171,8 +171,11 @@ const Dashboard = () => {
 
          <AccountLimitsCard currency={currency} />
 
-          {/* Virtual card */}
-          <div className="md:col-span-2 rounded-xl3 bg-gradient-to-br from-navy-600 to-navy-800 p-6 text-white shadow-card relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+         {/* Virtual card */}
+        <Link
+          to="/dashboard/cards"
+          className="block rounded-xl3 bg-gradient-to-br from-navy-600 to-navy-800 p-6 text-white shadow-card relative overflow-hidden flex flex-col justify-between min-h-[220px] hover:opacity-95 transition-opacity"
+        >
             {/* Card brand badge */}
             <div className="absolute right-6 top-6 flex items-center gap-3">
               <svg
@@ -209,16 +212,16 @@ const Dashboard = () => {
                   {data?.user?.firstName} {data?.user?.lastName}
                 </p>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-300 uppercase">
-                  Routing No.
-                </p>
-                <p className="text-sm font-medium">
-                  {data?.user?.routingNumber}
-                </p>
-              </div>
+            <div>
+              <p className="text-[10px] text-slate-300 uppercase">
+                Routing No.
+              </p>
+              <p className="text-sm font-medium">
+                {data?.user?.routingNumber}
+              </p>
             </div>
           </div>
+        </Link> 
         </div>
 
         
