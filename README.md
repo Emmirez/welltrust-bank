@@ -1,4 +1,4 @@
-# Well Trust Bank
+# Pinecrest Bank
 
 A full-stack banking web application built as a portfolio project. Real
 registration, real admin approval, real balance transfers, and multi-channel
@@ -16,7 +16,7 @@ an actual MongoDB-backed flow.
 ## Project structure
 
 ```
-welltrust-bank/
+pinecrest-bank/
 ├── backend/           Node/Express API
 │   ├── config/        MongoDB connection
 │   ├── controllers/   Route logic (auth, users, transactions, admin)
