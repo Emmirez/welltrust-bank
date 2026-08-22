@@ -6,7 +6,7 @@ import {
   ShieldCheck,
   Lock,
 } from "lucide-react";
-import FloatingWhatsApp from "./FloatingWhatsApp";
+
 
 const accountLinks = [
   { label: "Checking", to: "/accounts/checking" },
@@ -148,7 +148,7 @@ const Footer = () => {
           </p>
         </div>
       </div>
-      <FloatingWhatsApp />
+     
     </footer>
   );
 };

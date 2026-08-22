@@ -31,7 +31,7 @@ import Testimonials from "../components/Testimonials";
 import TrustedAndSecure from "../components/TrustedAndSecure";
 import StatsGallery from "../components/StatsGallery";
 import LiveExchangeRates from "../components/LiveExchangeRates";
-import FloatingWhatsApp from "../components/FloatingWhatsApp";
+
 
 const navLinks = [
   { label: "Accounts", href: "#accounts", icon: Wallet },
@@ -375,7 +375,7 @@ const Landing = () => {
 
       {/* FOOTER */}
       <Footer />
-      <FloatingWhatsApp />
+      
     </div>
   );
 };
