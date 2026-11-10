@@ -1,7 +1,7 @@
 import { Landmark, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
-const WELL_TRUST_SWIFT = "WTBKUS33";
+const WELL_TRUST_SWIFT = "WTBKCHGG";
 const WELL_TRUST_ADDRESS = "Rue des Alpes 14, 1201 Geneva, Switzerland";
 
 const Row = ({ label, value, copyable }) => {
@@ -38,8 +38,15 @@ const Row = ({ label, value, copyable }) => {
 };
 
 const AccountDetailsCard = ({ user }) => {
-  const fullAddress = user?.address
-    ? `${user.address.street}, ${user.address.city}, ${user.address.state} ${user.address.zip}, ${user.address.country}`
+   const fullAddress = user?.address
+    ? [
+        user.address.street,
+        user.address.city,
+        [user.address.state, user.address.zip].filter(Boolean).join(" "),
+        user.address.country,
+      ]
+        .filter(Boolean)
+        .join(", ")
     : null;
 
   return (

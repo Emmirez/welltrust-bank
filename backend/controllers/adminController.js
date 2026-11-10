@@ -256,6 +256,72 @@ export const adjustBalance = async (req, res) => {
   }
 };
 
+const formatAddress = (a) =>
+  a
+    ? [a.street, a.city, [a.state, a.zip].filter(Boolean).join(" "), a.country]
+        .filter(Boolean)
+        .join(", ")
+    : "none";
+
+// @route PUT /api/admin/users/:id/address
+// body: { street, city, state?, zip?, country }
+export const updateUserAddress = async (req, res) => {
+  try {
+    const { street, city, state, zip, country } = req.body;
+
+    if (!street?.trim() || !city?.trim() || !country) {
+      return res
+        .status(400)
+        .json({ message: "Street, city and country are required" });
+    }
+    if (
+      ["United States", "Canada"].includes(country) &&
+      (!state?.trim() || !zip?.trim())
+    ) {
+      return res.status(400).json({
+        message:
+          country === "Canada"
+            ? "Province and postal code are required"
+            : "State and ZIP code are required",
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const oldAddress = formatAddress(user.address);
+
+    user.address = {
+      street: street.trim(),
+      city: city.trim(),
+      state: state?.trim() || undefined,
+      zip: zip?.trim() || undefined,
+      country,
+    };
+    await user.save();
+
+    await AuditLog.create({
+      admin: req.user._id,
+      action: "update_address",
+      targetUser: user._id,
+      details: `Address changed from "${oldAddress}" to "${formatAddress(user.address)}"`,
+    });
+
+    await notifyGeneral(user, {
+      title: "Address updated",
+      message:
+        "The address on your account was updated by our team. If you didn't request this change, contact support immediately.",
+      type: "account",
+      email: true,
+    });
+
+    return res.json({ message: "Address updated", user });
+  } catch (error) {
+    console.error("Update address error:", error);
+    return res.status(500).json({ message: "Could not update address" });
+  }
+};
+
 // @route PUT /api/admin/users/:id/limits
 export const updateUserLimits = async (req, res) => {
   try {
@@ -290,20 +356,58 @@ export const updateUserLimits = async (req, res) => {
   }
 };
 
-// Computes how much a transaction currently affects each party's balance.
+// Computes how much a transaction affects each user's balance, keyed by user id.
 // Only "completed" transactions have any real balance effect.
-const getBalanceEffect = (tx) => {
-  if (tx.status !== "completed") return { senderEffect: 0, receiverEffect: 0 };
-  return {
-    senderEffect: tx.sender ? -tx.amount : 0,
-    receiverEffect: tx.receiver ? tx.amount : 0,
-  };
+const getBalanceEffects = ({ sender, receiver, amount, status }) => {
+  const effects = {};
+  if (status !== "completed") return effects;
+  if (sender) {
+    const id = sender.toString();
+    effects[id] = (effects[id] || 0) - amount;
+  }
+  if (receiver) {
+    const id = receiver.toString();
+    effects[id] = (effects[id] || 0) + amount;
+  }
+  return effects;
+};
+
+// Types that have a natural opposite when switching debit <-> credit
+const OPPOSITE_TYPE = {
+  adjustment_credit: "adjustment_debit",
+  adjustment_debit: "adjustment_credit",
+  deposit: "withdrawal",
+  withdrawal: "deposit",
+};
+
+// Loads every affected user and checks no balance would go negative.
+// Returns { users } on success or { error } if blocked. Does NOT save.
+const prepareBalanceChanges = async (oldEffects, newEffects) => {
+  const userIds = [
+    ...new Set([...Object.keys(oldEffects), ...Object.keys(newEffects)]),
+  ];
+  const users = [];
+  for (const uid of userIds) {
+    const user = await User.findById(uid);
+    if (!user) continue;
+    const delta = (newEffects[uid] || 0) - (oldEffects[uid] || 0);
+    const projected = user.balance + delta;
+    if (delta < 0 && projected < 0) {
+      return {
+        error: `This change would make ${user.firstName} ${user.lastName}'s balance negative (${user.currency} ${projected.toFixed(2)}).`,
+      };
+    }
+    users.push({ user, delta });
+  }
+  return { users };
 };
 
 // @route PUT /api/admin/transactions/:id
+// body: { amount?, status?, description?, category?, createdAt?, flipDirection? }
 export const updateTransaction = async (req, res) => {
   try {
-    const { amount, status, description, category, createdAt } = req.body;
+    const { amount, status, description, category, createdAt, flipDirection } =
+      req.body;
 
     const tx = await Transaction.findById(req.params.id);
     if (!tx) return res.status(404).json({ message: "Transaction not found" });
@@ -321,64 +425,78 @@ export const updateTransaction = async (req, res) => {
         .status(400)
         .json({ message: "Amount must be greater than zero" });
     }
-
-    const oldEffect = getBalanceEffect(tx);
+    if (flipDirection && tx.type === "loan_disbursement") {
+      return res.status(400).json({
+        message: "Loan disbursements can't be switched to a debit.",
+      });
+    }
 
     const newAmount = amount !== undefined ? amount : tx.amount;
     const newStatus = status || tx.status;
-    const newEffect = getBalanceEffect({
-      ...tx.toObject(),
+    const newSender = flipDirection ? tx.receiver : tx.sender;
+    const newReceiver = flipDirection ? tx.sender : tx.receiver;
+
+    const oldEffects = getBalanceEffects(tx);
+    const newEffects = getBalanceEffects({
+      sender: newSender,
+      receiver: newReceiver,
       amount: newAmount,
       status: newStatus,
     });
 
-    const senderDelta = newEffect.senderEffect - oldEffect.senderEffect;
-    const receiverDelta = newEffect.receiverEffect - oldEffect.receiverEffect;
+    // Check everything first, then apply — so nothing is half-saved
+    const { users, error } = await prepareBalanceChanges(
+      oldEffects,
+      newEffects,
+    );
+    if (error) return res.status(400).json({ message: error });
 
-    let sender, receiver;
-    if (tx.sender) {
-      sender = await User.findById(tx.sender);
-      const projectedBalance = sender.balance + senderDelta;
-      if (projectedBalance < 0) {
-        return res.status(400).json({
-          message: `This change would make the sender's balance negative (${sender.currency} ${projectedBalance.toFixed(2)}).`,
-        });
+    for (const { user, delta } of users) {
+      if (delta !== 0) {
+        user.balance += delta;
+        await user.save();
       }
     }
-    if (tx.receiver) {
-      receiver = await User.findById(tx.receiver);
-    }
 
-    if (sender) {
-      sender.balance += senderDelta;
-      await sender.save();
-    }
-    if (receiver) {
-      receiver.balance += receiverDelta;
-      await receiver.save();
+    const balanceOf = (id) =>
+      id
+        ? users.find((u) => u.user._id.toString() === id.toString())?.user
+            .balance
+        : undefined;
+
+    if (flipDirection) {
+      tx.sender = newSender;
+      tx.receiver = newReceiver;
+      const oldSenderBal = tx.balanceAfterSender;
+      tx.balanceAfterSender = tx.balanceAfterReceiver;
+      tx.balanceAfterReceiver = oldSenderBal;
+      if (OPPOSITE_TYPE[tx.type]) tx.type = OPPOSITE_TYPE[tx.type];
     }
 
     tx.amount = newAmount;
     tx.status = newStatus;
     if (description !== undefined) tx.description = description;
     if (category !== undefined) tx.category = category;
-    if (sender) tx.balanceAfterSender = sender.balance;
-    if (receiver) tx.balanceAfterReceiver = receiver.balance;
+    if (tx.sender) tx.balanceAfterSender = balanceOf(tx.sender);
+    if (tx.receiver) tx.balanceAfterReceiver = balanceOf(tx.receiver);
     await tx.save();
 
-    // Bypass whatever is blocking direct assignment on the Mongoose document —
-    // update the date via a raw query, then re-fetch fresh from the DB so
-    // what we return actually reflects what's persisted.
+    await AuditLog.create({
+      admin: req.user._id,
+      action: flipDirection ? "flip_transaction" : "edit_transaction",
+      targetUser: tx.sender || tx.receiver,
+      details: `Edited transaction ${tx.reference}${flipDirection ? " (switched debit/credit)" : ""} — ${tx.currency} ${tx.amount}, ${tx.status}`,
+    });
+
+    // Bypass Mongoose's schema/timestamps layer entirely — go straight to
+    // the native MongoDB driver collection, which has no knowledge of
+    // { timestamps: true } and cannot silently override this field.
     let finalTx = tx;
     if (createdAt) {
-      // Bypass Mongoose's schema/timestamps layer entirely — go straight to
-      // the native MongoDB driver collection, which has no knowledge of
-      // { timestamps: true } and cannot silently override this field.
-      const rawResult = await Transaction.collection.updateOne(
+      await Transaction.collection.updateOne(
         { _id: tx._id },
         { $set: { createdAt: new Date(createdAt) } },
       );
-
       finalTx = await Transaction.findById(tx._id);
     }
 
@@ -386,6 +504,45 @@ export const updateTransaction = async (req, res) => {
   } catch (error) {
     console.error("Update transaction error:", error);
     return res.status(500).json({ message: "Could not update transaction" });
+  }
+};
+
+// @route DELETE /api/admin/transactions/:id
+// Reverses the transaction's balance effect, then deletes it
+export const deleteTransaction = async (req, res) => {
+  try {
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json({ message: "Transaction not found" });
+
+    const oldEffects = getBalanceEffects(tx);
+    const { users, error } = await prepareBalanceChanges(oldEffects, {});
+    if (error) return res.status(400).json({ message: error });
+
+    for (const { user, delta } of users) {
+      if (delta !== 0) {
+        user.balance += delta;
+        await user.save();
+      }
+    }
+
+    await tx.deleteOne();
+
+    await AuditLog.create({
+      admin: req.user._id,
+      action: "delete_transaction",
+      targetUser: tx.sender || tx.receiver,
+      details: `Deleted transaction ${tx.reference} (${tx.currency} ${tx.amount}, ${tx.status})${tx.status === "completed" ? " — balance reversed" : ""}`,
+    });
+
+    return res.json({
+      message:
+        tx.status === "completed"
+          ? "Transaction deleted and balance reversed"
+          : "Transaction deleted",
+    });
+  } catch (error) {
+    console.error("Delete transaction error:", error);
+    return res.status(500).json({ message: "Could not delete transaction" });
   }
 };
 

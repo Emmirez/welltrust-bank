@@ -48,8 +48,35 @@ export const register = async (req, res) => {
         .json({ message: "Transaction PIN must be exactly 4 digits" });
     }
 
-    if (!/^\d{9}$/.test(ssn)) {
-      return res.status(400).json({ message: "SSN must be 9 digits" });
+       // Address + country checks (any country can register)
+    if (!address.country || !address.street || !address.city) {
+      return res
+        .status(400)
+        .json({ message: "Please provide your full address and country" });
+    }
+
+    const isUsOrCanada = ["United States", "Canada"].includes(address.country);
+
+    if (isUsOrCanada && (!address.state || !address.zip)) {
+      return res.status(400).json({
+        message:
+          address.country === "Canada"
+            ? "Province and postal code are required"
+            : "State and ZIP code are required",
+      });
+    }
+
+    // ID number checks: SSN (US) / SIN (Canada) = 9 digits, others = 4–20 letters/numbers
+    if (isUsOrCanada) {
+      if (!/^\d{9}$/.test(ssn)) {
+        return res.status(400).json({
+          message: `${address.country === "Canada" ? "SIN" : "SSN"} must be exactly 9 digits`,
+        });
+      }
+    } else if (!/^[A-Z0-9]{4,20}$/i.test(ssn)) {
+      return res
+        .status(400)
+        .json({ message: "ID number must be 4–20 letters or numbers" });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
