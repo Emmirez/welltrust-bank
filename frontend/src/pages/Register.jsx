@@ -7,7 +7,6 @@ import {
   Calendar,
   Hash,
   MapPin,
-  Globe,
   Lock,
   KeyRound,
   Wallet,
@@ -23,7 +22,10 @@ import {
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CustomSelect from "../components/CustomSelect";
 import { countries } from "../utils/countries";
+
+const countryOptions = countries.map((c) => ({ value: c, label: c }));
 
 const accountTypeOptions = [
   {
@@ -354,26 +356,12 @@ const Register = () => {
 
                         {step === 1 && (
               <div className="space-y-4">
-                <div className="relative">
-                  <Globe
-                    size={17}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <select
-                    value={form.country}
-                    onChange={(e) => changeCountry(e.target.value)}
-                    className={`input-field !pl-10 ${form.country ? "text-navy-900" : "text-slate-400"}`}
-                  >
-                    <option value="" disabled>
-                      Select your country
-                    </option>
-                    {countries.map((c) => (
-                      <option key={c} value={c} className="text-navy-900">
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                                <CustomSelect
+                  value={form.country}
+                  onChange={(v) => changeCountry(v)}
+                  options={countryOptions}
+                  placeholder="Select your country"
+                />
 
                 {form.country && (
                   <>
